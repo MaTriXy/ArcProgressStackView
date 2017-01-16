@@ -1,9 +1,13 @@
-package com.gigamole.arcprogressstackview;
+package devlight.io.sample;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
@@ -14,10 +18,11 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.colormixer.ColorMixer;
 import com.commonsware.cwac.colormixer.ColorMixerDialog;
-import com.gigamole.library.ArcProgressStackView;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import devlight.io.library.ArcProgressStackView;
 
 public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements
         mArcProgressStackView = (ArcProgressStackView) findViewById(R.id.apsv);
 
         // Get colors
-        final String[] startColors = getResources().getStringArray(R.array.polluted_waves);
+        final String[] startColors = getResources().getStringArray(R.array.devlight);
         final String[] endColors = getResources().getStringArray(R.array.default_preview);
         final String[] bgColors = getResources().getStringArray(R.array.medical_express);
 
@@ -68,10 +73,10 @@ public class MainActivity extends AppCompatActivity implements
 
         // Set models
         final ArrayList<ArcProgressStackView.Model> models = new ArrayList<>();
-        models.add(new ArcProgressStackView.Model("Circle", 0, Color.parseColor(bgColors[0]), mStartColors[0]));
-        models.add(new ArcProgressStackView.Model("Progress", 0, Color.parseColor(bgColors[1]), mStartColors[1]));
-        models.add(new ArcProgressStackView.Model("Stack", 0, Color.parseColor(bgColors[2]), mStartColors[2]));
-        models.add(new ArcProgressStackView.Model("View", 0, Color.parseColor(bgColors[3]), mStartColors[3]));
+        models.add(new ArcProgressStackView.Model("Strategy", 0, Color.parseColor(bgColors[0]), mStartColors[0]));
+        models.add(new ArcProgressStackView.Model("Design", 0, Color.parseColor(bgColors[1]), mStartColors[1]));
+        models.add(new ArcProgressStackView.Model("Development", 0, Color.parseColor(bgColors[2]), mStartColors[2]));
+        models.add(new ArcProgressStackView.Model("QA", 0, Color.parseColor(bgColors[3]), mStartColors[3]));
         mArcProgressStackView.setModels(models);
 
         // Get wrappers
@@ -83,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements
         final CheckBox cbDragging = (CheckBox) findViewById(R.id.cb_dragging);
         final CheckBox cbShadowing = (CheckBox) findViewById(R.id.cb_shadowing);
         final CheckBox cbRounding = (CheckBox) findViewById(R.id.cb_rounding);
+        final CheckBox cbLeveling = (CheckBox) findViewById(R.id.cb_leveling);
         final CheckBox cbShowModelBg = (CheckBox) findViewById(R.id.cb_show_model_bg);
         final CheckBox cbUseCustomTypeface = (CheckBox) findViewById(R.id.cb_use_custom_typeface);
         final CheckBox cbUseOvershootInterpolator = (CheckBox) findViewById(R.id.cb_use_overshoot_interpolator);
@@ -95,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements
         cbShadowing.setOnCheckedChangeListener(this);
         cbRounding.setOnCheckedChangeListener(this);
         cbShowModelBg.setOnCheckedChangeListener(this);
+        cbLeveling.setOnCheckedChangeListener(this);
         cbUseCustomTypeface.setOnCheckedChangeListener(this);
         cbUseOvershootInterpolator.setOnCheckedChangeListener(this);
         cbUseVerticalOrientation.setOnCheckedChangeListener(this);
@@ -104,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements
         onCheckedChanged(cbDragging, cbDragging.isChecked());
         onCheckedChanged(cbShadowing, cbShadowing.isChecked());
         onCheckedChanged(cbRounding, cbRounding.isChecked());
+        onCheckedChanged(cbLeveling, cbLeveling.isChecked());
         onCheckedChanged(cbShowModelBg, cbShowModelBg.isChecked());
         onCheckedChanged(cbUseCustomTypeface, cbUseCustomTypeface.isChecked());
         onCheckedChanged(cbUseOvershootInterpolator, cbUseOvershootInterpolator.isChecked());
@@ -114,12 +122,14 @@ public class MainActivity extends AppCompatActivity implements
         mBtnTextColor = (Button) findViewById(R.id.btn_text_color);
         mBtnShadowColor = (Button) findViewById(R.id.btn_shadow_color);
         final Button btnAnimate = (Button) findViewById(R.id.btn_animate);
+        final Button btnPresentation = (Button) findViewById(R.id.btn_presentation);
         final Button btnReset = (Button) findViewById(R.id.btn_reset);
 
         // Set buttons
         mBtnTextColor.setOnClickListener(this);
         mBtnShadowColor.setOnClickListener(this);
         btnAnimate.setOnClickListener(this);
+        btnPresentation.setOnClickListener(this);
         btnReset.setOnClickListener(this);
 
         // Set default colors
@@ -149,25 +159,17 @@ public class MainActivity extends AppCompatActivity implements
         sbSweepAngle.setOnSeekBarChangeListener(this);
 
         // Set animator listener
-        mArcProgressStackView.setAnimatorListener(new Animator.AnimatorListener() {
+        mArcProgressStackView.setAnimatorUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void onAnimationStart(final Animator animation) {
-
+            public void onAnimationUpdate(final ValueAnimator animation) {
+                // Update goes here
+                Log.d("onAnimationUpdate: ", String.valueOf(animation.getAnimatedValue()));
             }
-
+        });
+        mArcProgressStackView.setAnimatorListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(final Animator animation) {
                 Toast.makeText(MainActivity.this, "ANIMATION", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onAnimationCancel(final Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(final Animator animation) {
-
             }
         });
 
@@ -192,10 +194,15 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.cb_shadowing:
                 mArcProgressStackView.setIsShadowed(isChecked);
+                mArcProgressStackView.requestLayout();
                 mWrapperShadow.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 break;
             case R.id.cb_rounding:
                 mArcProgressStackView.setIsRounded(isChecked);
+                mArcProgressStackView.postInvalidate();
+                break;
+            case R.id.cb_leveling:
+                mArcProgressStackView.setIsLeveled(isChecked);
                 break;
             case R.id.cb_show_model_bg:
                 mArcProgressStackView.setModelBgEnabled(isChecked);
@@ -208,8 +215,8 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.cb_use_vertical_orientation:
                 mArcProgressStackView.setIndicatorOrientation(isChecked ?
-                                ArcProgressStackView.IndicatorOrientation.VERTICAL :
-                                ArcProgressStackView.IndicatorOrientation.HORIZONTAL
+                        ArcProgressStackView.IndicatorOrientation.VERTICAL :
+                        ArcProgressStackView.IndicatorOrientation.HORIZONTAL
                 );
                 break;
             case R.id.cb_use_gradient:
@@ -219,6 +226,9 @@ public class MainActivity extends AppCompatActivity implements
                     model.setColors(isChecked ? new int[]{mStartColors[i], mEndColors[i]} : null);
                 }
                 mArcProgressStackView.requestLayout();
+                mArcProgressStackView.postInvalidate();
+                break;
+            default:
                 break;
         }
     }
@@ -242,6 +252,11 @@ public class MainActivity extends AppCompatActivity implements
                 finish();
                 startActivity(getIntent());
                 break;
+            case R.id.btn_presentation:
+                startActivity(new Intent(MainActivity.this, PresentationActivity.class));
+                break;
+            default:
+                break;
         }
     }
 
@@ -252,17 +267,20 @@ public class MainActivity extends AppCompatActivity implements
                 if (mFullSize == -1)
                     mFullSize = mArcProgressStackView.getSize();
                 mArcProgressStackView.getLayoutParams().height = (int) ((mFullSize * 0.5f) +
-                                (int) ((float) mFullSize * 0.5f * ((float) progress / 100.0f)));
+                        (int) ((float) mFullSize * 0.5f * ((float) progress / 100.0f)));
                 mArcProgressStackView.requestLayout();
                 break;
             case R.id.pb_shadow_distance:
                 mArcProgressStackView.setShadowDistance(progress);
+                mArcProgressStackView.postInvalidate();
                 break;
             case R.id.pb_shadow_angle:
                 mArcProgressStackView.setShadowAngle(progress);
+                mArcProgressStackView.postInvalidate();
                 break;
             case R.id.pb_shadow_radius:
                 mArcProgressStackView.setShadowRadius(progress);
+                mArcProgressStackView.postInvalidate();
                 break;
             case R.id.pb_animation_duration:
                 mArcProgressStackView.setAnimationDuration(progress);
@@ -279,17 +297,19 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.pb_sweep_angle:
                 mArcProgressStackView.setSweepAngle(progress);
                 break;
+            default:
+                break;
         }
     }
 
     @Override
     public void onStartTrackingTouch(final SeekBar seekBar) {
-
+        // Empty cause of implement
     }
 
     @Override
     public void onStopTrackingTouch(final SeekBar seekBar) {
-
+        // Empty cause of implement
     }
 
     private void showColorPicker(final boolean isShadowColor) {
