@@ -149,6 +149,7 @@ public class ArcProgressStackView extends View {
     private boolean mIsRounded;
     private boolean mIsDragged;
     private boolean mIsModelBgEnabled;
+    private boolean mIsShowProgress;
     private boolean mIsLeveled;
 
     // Colors
@@ -269,6 +270,11 @@ public class ArcProgressStackView extends View {
             setModelBgEnabled(
                     typedArray.getBoolean(
                             R.styleable.ArcProgressStackView_apsv_model_bg_enabled, false
+                    )
+            );
+            setShowProgress(
+                    typedArray.getBoolean(
+                            R.styleable.ArcProgressStackView_apsv_show_progress, true
                     )
             );
 
@@ -453,6 +459,15 @@ public class ArcProgressStackView extends View {
 
     public void setModelBgEnabled(final boolean modelBgEnabled) {
         mIsModelBgEnabled = modelBgEnabled;
+        postInvalidate();
+    }
+
+    public boolean isShowProgress() {
+        return mIsShowProgress;
+    }
+
+    public void setShowProgress(final boolean showProgress) {
+        mIsShowProgress = showProgress;
         postInvalidate();
     }
 
@@ -911,7 +926,7 @@ public class ArcProgressStackView extends View {
                     (float) (Math.PI / 180.0F) * progress * model.mBounds.width() * 0.5F;
             final String title = (String) TextUtils.ellipsize(
                     model.getTitle(), mTextPaint,
-                    progressLength - titleHorizontalOffset * 2, TextUtils.TruncateAt.END
+                    progressLength - titleHorizontalOffset * (mIsRounded ? 0 : 2), TextUtils.TruncateAt.END
             );
             canvas.drawTextOnPath(
                     title,
@@ -977,12 +992,14 @@ public class ArcProgressStackView extends View {
                 // Draw progress value
                 canvas.save();
                 canvas.rotate(indicatorProgressAngle, model.mPos[0], model.mPos[1]);
-                canvas.drawText(
-                        percentProgress,
-                        model.mPos[0] - model.mTextBounds.exactCenterX(),
-                        model.mPos[1] - model.mTextBounds.exactCenterY(),
-                        mTextPaint
-                );
+                if (mIsShowProgress) {
+                    canvas.drawText(
+                            percentProgress,
+                            model.mPos[0] - model.mTextBounds.exactCenterX(),
+                            model.mPos[1] - model.mTextBounds.exactCenterY(),
+                            mTextPaint
+                    );
+                }
                 canvas.restore();
             }
 
